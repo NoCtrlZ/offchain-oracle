@@ -14,8 +14,8 @@ library OracleClient {
         string memory _url,
         string memory _path,
         string memory _callbackFunction,
-        string memory _resType
-    ) internal pure returns (OracleClient.Request memory)
+        string memory _resType)
+        internal pure returns (OracleClient.Request memory)
     {
         self.url = _url;
         self.path = _path;
@@ -26,8 +26,8 @@ library OracleClient {
     function send(
         Request memory self,
         address _oracleContractAddress,
-        address _callbackAddress
-    ) internal returns (bool)
+        address _callbackAddress)
+        internal returns (bool)
     {
         (bool isSuccess, ) = _oracleContractAddress.call(
             abi.encodeWithSignature("request(string,string,address,string,string)",
