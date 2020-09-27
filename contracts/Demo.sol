@@ -1,9 +1,14 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.7.0;
+
+import "./OracleClient.sol";
 
 contract Demo {
     address public oracleContractAddress;
     bool public isOracleOpen;
     string public oracleValue;
+
+    using OracleClient for OracleClient.Request;
 
     constructor(address _oracleContractAddress) {
         oracleContractAddress = _oracleContractAddress;
@@ -25,15 +30,10 @@ contract Demo {
         string memory _resType)
         public
     {
-            (bool isSuccess, ) = oracleContractAddress.call(
-                abi.encodeWithSignature("request(string,string,address,string,string)",
-                _url,
-                _path,
-                address(this),
-                _callbackFunction,
-                _resType));
-            require(isSuccess, "failed to execute oracle function");
-            isOracleOpen = true;
+        OracleClient.Request memory req;
+        req.init(_url, _path, _callbackFunction, _resType);
+        bool isSuccess = req.send(oracleContractAddress, address(this));
+        require(isSuccess, "failed to call oracle function");
     }
 
     function receiveOracle(string memory oracle) external {
