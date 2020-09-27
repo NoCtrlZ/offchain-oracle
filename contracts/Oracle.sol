@@ -30,6 +30,21 @@ contract Oracle is Storage {
         bytes32 index = keccak256(abi.encodePacked(_url, _path, _callbackAddress, _callbackFunction));
         req.init(_callbackAddress, _callbackFunction, _resType);
         requestStorage[keccak256(bytes(_resType))][index] = req;
+        isRequestComplete[index] = false;
+        emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType, index);
+    }
+
+    function requestAgain(
+        string memory _url,
+        string memory _path,
+        address _callbackAddress,
+        string memory _callbackFunction,
+        string memory _resType)
+        public
+        isValidRequest(_resType)
+    {
+        bytes32 index = keccak256(abi.encodePacked(_url, _path, _callbackAddress, _callbackFunction));
+        require(!isRequestComplete[index], "request was already completed");
         emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType, index);
     }
 
@@ -45,6 +60,7 @@ contract Oracle is Storage {
         Modules.Request memory req = requestStorage[keccak256(bytes("uint"))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));
         require(isSuccess, "failed to execute callback function");
+        isRequestComplete[_index] = true;
     }
 
     function getOracleContractAddress() view public returns (address)
