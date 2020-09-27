@@ -34,13 +34,13 @@ contract Oracle is Storage {
     function responseString(bytes32 _index, string memory _value) public {
         Modules.Request memory req = requestStorage[keccak256(bytes("string"))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));
-        require(isSuccess, "delegate call failed to execute");
+        require(isSuccess, "failed to execute callback function");
     }
 
      function responseUint(bytes32 _index, uint256 _value) public {
         Modules.Request memory req = requestStorage[keccak256(bytes("uint"))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));
-        require(isSuccess, "delegate call failed to execute");
+        require(isSuccess, "failed to execute callback function");
     }
 
     function getOracleContractAddress() view public returns (address) {
