@@ -1,6 +1,8 @@
-# Oracle Mainchain contract
+# Oracle Mainchain Contract
 ## Usage
 ```solidity
+using OracleClient for OracleClient.Request;
+
 function createRequest(
         string memory _url,
         string memory _path,

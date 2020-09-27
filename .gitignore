@@ -5,3 +5,10 @@ package-lock.json
 
 # Contract Build File
 build
+
+# Deployment
+.env
+
+# Openzeppelin
+.openzeppelin/.session
+.openzeppelin/*.json
