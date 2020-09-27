@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "truffle compile",
-    "test": "truffle test"
+    "test": "truffle test --network development"
   },
   "repository": {
     "type": "git",

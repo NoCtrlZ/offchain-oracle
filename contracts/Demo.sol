@@ -1,9 +1,9 @@
 pragma solidity 0.7.0;
 
 contract Demo {
-    address oracleContractAddress;
-    bool isOracleOpen;
-    string oracleValue;
+    address public oracleContractAddress;
+    bool public isOracleOpen;
+    string public oracleValue;
 
     constructor(address _oracleContractAddress) {
         oracleContractAddress = _oracleContractAddress;
@@ -24,14 +24,14 @@ contract Demo {
         string memory _resType)
         public
     {
-            (bool isSuccess, ) = oracleContractAddress.delegatecall(
-                abi.encodeWithSignature("request(string,string,address,string,string",
+            (bool isSuccess, ) = oracleContractAddress.call(
+                abi.encodeWithSignature("request(string,string,address,string,string)",
                 _url,
                 _path,
                 address(this),
                 "receiveOracle(string)",
                 _resType));
-            require(isSuccess, "failed to execute callback function");
+            require(isSuccess, "failed to execute oracle function");
             isOracleOpen = true;
     }
 
