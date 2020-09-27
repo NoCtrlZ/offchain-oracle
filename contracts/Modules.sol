@@ -1,17 +1,20 @@
-pragma solidity 0.6.0;
+pragma solidity 0.7.0;
 
 library Modules {
     struct Request {
         address callbackAddress;
-        bytes4 callbackFunction;
+        string callbackFunction;
+        string resType;
     }
 
     function init(
         Request memory self,
         address _callbackAddress,
-        bytes4 _callbackFunction
+        string memory _callbackFunction,
+        string memory _resType
     ) internal pure returns (Modules.Request memory) {
         self.callbackAddress = _callbackAddress;
         self.callbackFunction = _callbackFunction;
+        self.resType = _resType;
     }
 }
