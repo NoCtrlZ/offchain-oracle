@@ -6,6 +6,9 @@ package-lock.json
 # Contract Build File
 build
 
+# Test Dir
+sample
+
 # Deployment
 .env
 
