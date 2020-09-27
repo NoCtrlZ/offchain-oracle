@@ -22,8 +22,8 @@ contract Demo {
         string memory _url,
         string memory _path,
         string memory _resType)
-        public {
-
+        public
+    {
             (bool isSuccess, ) = oracleContractAddress.delegatecall(
                 abi.encodeWithSignature("request(string,string,address,string,string",
                 _url,

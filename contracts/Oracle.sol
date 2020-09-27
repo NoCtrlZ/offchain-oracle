@@ -7,7 +7,8 @@ contract Oracle is Storage {
     event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, string resType);
     using Modules for Modules.Request;
 
-    modifier isValidRequest(string memory _resType) {
+    modifier isValidRequest(string memory _resType)
+    {
         require(
             keccak256(bytes(_resType)) == keccak256(bytes("string")) || keccak256(bytes(_resType)) == keccak256(bytes("uint")),
             "return type is invalid"
@@ -31,19 +32,22 @@ contract Oracle is Storage {
         emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType);
     }
 
-    function responseString(bytes32 _index, string memory _value) public {
+    function responseString(bytes32 _index, string memory _value) public
+    {
         Modules.Request memory req = requestStorage[keccak256(bytes("string"))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));
         require(isSuccess, "failed to execute callback function");
     }
 
-     function responseUint(bytes32 _index, uint256 _value) public {
+    function responseUint(bytes32 _index, uint256 _value) public
+    {
         Modules.Request memory req = requestStorage[keccak256(bytes("uint"))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));
         require(isSuccess, "failed to execute callback function");
     }
 
-    function getOracleContractAddress() view public returns (address) {
+    function getOracleContractAddress() view public returns (address)
+    {
         return address(this);
     }
 }

@@ -12,7 +12,8 @@ library Modules {
         address _callbackAddress,
         string memory _callbackFunction,
         string memory _resType
-    ) internal pure returns (Modules.Request memory) {
+    ) internal pure returns (Modules.Request memory)
+    {
         self.callbackAddress = _callbackAddress;
         self.callbackFunction = _callbackFunction;
         self.resType = _resType;
