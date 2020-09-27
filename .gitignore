@@ -1,1 +1,7 @@
+# npm package
 node_modules
+package-lock.json
+*.log
+
+# Contract Build File
+build

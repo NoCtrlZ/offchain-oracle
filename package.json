@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/NoCtrlZ/oracle-mainchain-contract/issues"
   },
-  "homepage": "https://github.com/NoCtrlZ/oracle-mainchain-contract#readme"
+  "homepage": "https://github.com/NoCtrlZ/oracle-mainchain-contract#readme",
+  "devDependencies": {
+    "@openzeppelin/upgrades": "^2.8.0"
+  }
 }
