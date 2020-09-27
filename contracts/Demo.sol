@@ -21,6 +21,7 @@ contract Demo {
     function createRequest(
         string memory _url,
         string memory _path,
+        string memory _callbackFunction,
         string memory _resType)
         public
     {
@@ -29,7 +30,7 @@ contract Demo {
                 _url,
                 _path,
                 address(this),
-                "receiveOracle(string)",
+                _callbackFunction,
                 _resType));
             require(isSuccess, "failed to execute oracle function");
             isOracleOpen = true;

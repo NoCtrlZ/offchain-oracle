@@ -4,7 +4,7 @@ import "./Storage.sol";
 import "./Modules.sol";
 
 contract Oracle is Storage {
-    event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, string resType);
+    event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, string resType, bytes32 index);
     using Modules for Modules.Request;
 
     modifier isValidRequest(string memory _resType)
@@ -29,7 +29,7 @@ contract Oracle is Storage {
         bytes32 index = keccak256(abi.encodePacked(_url, _path, _callbackAddress, _callbackFunction));
         req.init(_callbackAddress, _callbackFunction, _resType);
         requestStorage[keccak256(bytes(_resType))][index] = req;
-        emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType);
+        emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType, index);
     }
 
     function responseString(bytes32 _index, string memory _value) public

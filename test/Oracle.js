@@ -1,7 +1,14 @@
 const truffleAssert = require('truffle-assertions');
+const { soliditySha3 } = require("web3-utils");
 
 const Oracle = artifacts.require("Oracle")
 const Demo = artifacts.require("Demo")
+
+const
+url = 'http://localhost:5000/api/vi',
+path = 'data.price',
+callbackFunction = "receiveOracle(string)",
+reqType = 'string'
 
 contract("Deploy And Test", () => {
     let oracle, demo
@@ -22,8 +29,13 @@ contract("Deploy And Test", () => {
     )
 
     describe('Request And Response Test',
-        it('Send Request Test', async () => {
-            await demo.createRequest('http://localhost:5000/api/vi', 'data.price', 'string')
+        it('Request And Response Flow Test', async () => {
+            await demo.createRequest(url, path, callbackFunction, reqType)
+            const index = soliditySha3(url, path, demo.address, callbackFunction)
+            await oracle.responseString(index, "25")
+            const oracleValue = await demo.oracleValue()
+
+            assert.equal(oracleValue, "25")
         })
     )
 })
