@@ -50,4 +50,14 @@ contract("Deploy And Test", (accounts) => {
             assert.equal(isDeposit, true)
         })
     )
+
+    describe('Withdraw Ether',
+        it('Withdraw Ether Test', async () => {
+            await oracle.unlock()
+            await oracle.withdrawEther()
+            const isDeposit = await oracle.isDeposit(accounts[0])
+
+            assert.equal(isDeposit, false)
+        })
+    )
 })
