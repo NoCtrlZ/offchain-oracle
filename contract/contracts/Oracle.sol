@@ -5,8 +5,22 @@ import "./Storage.sol";
 import "./Modules.sol";
 
 contract Oracle is Storage {
+    address public networkAddress;
     event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, string resType, bytes32 index);
     using Modules for Modules.Request;
+
+    constructor(address _networkAddress) {
+        networkAddress = _networkAddress;
+    }
+
+    modifier isFromNetwork(address _caller)
+    {
+        require(
+            _caller == networkAddress,
+            "caller is invalid"
+        );
+        _;
+    }
 
     modifier isValidRequest(string memory _resType)
     {
@@ -48,14 +62,14 @@ contract Oracle is Storage {
         emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType, index);
     }
 
-    function responseString(bytes32 _index, string memory _value) public
+    function responseString(bytes32 _index, string memory _value) public isFromNetwork(msg.sender)
     {
         Modules.Request memory req = requestStorage[keccak256(bytes("string"))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));
         require(isSuccess, "failed to execute callback function");
     }
 
-    function responseUint(bytes32 _index, uint256 _value) public
+    function responseUint(bytes32 _index, uint256 _value) public isFromNetwork(msg.sender)
     {
         Modules.Request memory req = requestStorage[keccak256(bytes("uint"))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));

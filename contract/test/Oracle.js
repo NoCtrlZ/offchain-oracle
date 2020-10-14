@@ -1,4 +1,4 @@
-const truffleAssert = require('truffle-assertions');
+// const truffleAssert = require('truffle-assertions');
 const { soliditySha3 } = require("web3-utils");
 
 const Oracle = artifacts.require("Oracle")
@@ -10,11 +10,11 @@ path = 'data.price',
 callbackFunction = "receiveOracle(string)",
 reqType = 'string'
 
-contract("Deploy And Test", () => {
+contract("Deploy And Test", (accounts) => {
     let oracle, demo
 
     before( async () => {
-        oracle = await Oracle.new()
+        oracle = await Oracle.new(accounts[0])
         demo = await Demo.new(oracle.address)
     })
 
@@ -22,9 +22,11 @@ contract("Deploy And Test", () => {
         it('Deploy Test', async () => {
             const oreacleAddress = await oracle.getOracleContractAddress()
             const oracleContractAddress = await demo.oracleContractAddress()
+            const networkAddress = await oracle.networkAddress()
 
             assert.equal(oreacleAddress, oracle.address)
             assert.equal(oracleContractAddress, oracle.address)
+            assert.equal(networkAddress, accounts[0])
         })
     )
 

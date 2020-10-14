@@ -1,7 +1,4 @@
 #!/bin/sh
 
-echo "Build Container"
-docker-compose up
-
 echo "Deploy Contract"
-docker exec -itd npm run deploy
+docker exec -itd ganache npm run deploy
