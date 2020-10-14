@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/NoCtrlZ/oracle-mainchain-contract#readme",
   "dependencies": {
-    "truffle": "^5.1.46"
+    "truffle": "^5.1.48"
   },
   "devDependencies": {
     "dotenv": "^8.2.0",

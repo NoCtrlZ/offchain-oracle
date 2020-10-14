@@ -2,7 +2,12 @@ FROM node:12.11.1-alpine
 
 WORKDIR /app
 
-RUN npm i -g ganache-cli
+COPY . .
+
+RUN apk add git &&\
+    npm i -g ganache-cli &&\
+    npm i &&\
+    npm run build
 
 EXPOSE 7545
 
