@@ -1,0 +1,11 @@
+version: '3'
+services:
+  ganache:
+    build: ./contract
+    container_name: ganache
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./contract:/app
+    ports:
+      - "7545:7545"
