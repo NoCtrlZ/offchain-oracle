@@ -85,6 +85,13 @@ contract("Deploy And Test", (accounts) => {
                 return Number(ev.amount) === oneEther - onePunish &&
                     ev.withdrawer === accounts[1]
             })
+
+            await oracle.unlock({ from: accounts[2] })
+            const withrawThreeTx = await oracle.withdrawEther({ from: accounts[2] })
+            truffleAssert.eventEmitted(withrawThreeTx, 'WithdrawEther', ev => {
+                return Number(ev.amount) === oneEther - onePunish &&
+                    ev.withdrawer === accounts[2]
+            })
         })
     )
 })
