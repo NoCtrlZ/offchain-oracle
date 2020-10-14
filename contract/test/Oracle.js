@@ -1,4 +1,4 @@
-// const truffleAssert = require('truffle-assertions');
+const truffleAssert = require('truffle-assertions');
 const { soliditySha3 } = require("web3-utils");
 
 const Oracle = artifacts.require("Oracle")
@@ -10,7 +10,9 @@ path = 'data.price',
 callbackFunction = "receiveOracle(string)",
 reqType = 'string',
 minReporter = 100,
-oneEther = 1e18
+oneEther = 1e18,
+oneReward = 1e14,
+onePunish = 1e17
 
 contract("Deploy And Test", (accounts) => {
     let oracle, demo
@@ -70,11 +72,19 @@ contract("Deploy And Test", (accounts) => {
 
     describe('Withdraw Ether',
         it('Withdraw Ether Test', async () => {
-            await oracle.unlock()
-            await oracle.withdrawEther()
-            const isDeposit = await oracle.isDeposit(accounts[0])
+            await oracle.unlock({ from: accounts[0] })
+            const withrawOneTx = await oracle.withdrawEther({ from: accounts[0] })
+            truffleAssert.eventEmitted(withrawOneTx, 'WithdrawEther', ev => {
+                return Number(ev.amount) === oneEther + oneReward &&
+                    ev.withdrawer === accounts[0]
+            })
 
-            assert.equal(isDeposit, false)
+            await oracle.unlock({ from: accounts[1] })
+            const withrawTwoTx = await oracle.withdrawEther({ from: accounts[1] })
+            truffleAssert.eventEmitted(withrawTwoTx, 'WithdrawEther', ev => {
+                return Number(ev.amount) === oneEther - onePunish &&
+                    ev.withdrawer === accounts[1]
+            })
         })
     )
 })

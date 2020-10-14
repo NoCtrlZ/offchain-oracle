@@ -6,16 +6,17 @@ on:
       - master
 jobs:
   build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [12.11.1]
+    docker:
+      - image: circleci/node:12.11.0
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: cd contract && yarn && yarn build
-      env:
-        CI: true
+      - checkout
+      - run:
+          name: Install dependency
+          command: |
+            sudo npm i -g --loglevel=silent --unsafe-perm=true --allow-root ganache-cli@6.8.1
+      - run:
+          name: Unit Test
+          command: |
+            ganache-cli -m="belt prize arrow cabbage banner proof word above ability helmet design rely" --networkId=5777 -p 7545 -h 0.0.0.0 &
+            cd contract
+            npm run test

@@ -8,6 +8,7 @@ contract Oracle is Storage {
     address public networkAddress;
     uint256 constant returnFunctionGasFee = 1 ether / 20;
     event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, string resType, bytes32 index);
+    event WithdrawEther(address withdrawer, uint256 amount);
     using Modules for Modules.Request;
 
     constructor(address _networkAddress) {
@@ -150,7 +151,9 @@ contract Oracle is Storage {
 
     function withdrawEther() public payable isStaking isNotLock
     {
-        msg.sender.transfer(1 ether - (punishStorage[msg.sender] * 1e17) + (rewardStorage[msg.sender] * 1e14));
+        uint256 withdrawAmout = 1 ether - (punishStorage[msg.sender] * 1e17) + (rewardStorage[msg.sender] * 1e14);
+        msg.sender.transfer(withdrawAmout);
+        WithdrawEther(msg.sender, withdrawAmout);
     }
 
     function unlock() public isLock
