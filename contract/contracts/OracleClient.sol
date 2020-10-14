@@ -7,6 +7,7 @@ library OracleClient {
         string path;
         string callbackFunction;
         string resType;
+        uint256 minReporter;
     }
 
     function init(
@@ -14,13 +15,15 @@ library OracleClient {
         string memory _url,
         string memory _path,
         string memory _callbackFunction,
-        string memory _resType)
+        string memory _resType,
+        uint256 _minReporter)
         internal pure returns (OracleClient.Request memory)
     {
         self.url = _url;
         self.path = _path;
         self.callbackFunction = _callbackFunction;
         self.resType = _resType;
+        self.minReporter = _minReporter;
     }
 
     function send(
@@ -29,13 +32,14 @@ library OracleClient {
         address _callbackAddress)
         internal returns (bool)
     {
-        (bool isSuccess, ) = _oracleContractAddress.call(
-            abi.encodeWithSignature("request(string,string,address,string,string)",
+        (bool isSuccess, ) = _oracleContractAddress.call{ value: msg.value }(
+            abi.encodeWithSignature("request(string,string,address,string,string,uint256)",
             self.url,
             self.path,
             _callbackAddress,
             self.callbackFunction,
-            self.resType
+            self.resType,
+            self.minReporter
         ));
         require(isSuccess, "failed to execute oracle function");
         return isSuccess;

@@ -6,11 +6,21 @@ import "./Modules.sol";
 
 contract Oracle is Storage {
     address public networkAddress;
+    uint256 constant returnFunctionGasFee = 1 ether / 20;
     event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, string resType, bytes32 index);
     using Modules for Modules.Request;
 
     constructor(address _networkAddress) {
         networkAddress = _networkAddress;
+    }
+
+    modifier isEnoughEther(uint256 _etherValue, uint256 _numberOfReporter)
+    {
+        require(
+            isSatisfiedAmount(_etherValue, returnFunctionGasFee, _numberOfReporter),
+            "value is not enough"
+        );
+        _;
     }
 
     modifier isLock()
@@ -59,10 +69,10 @@ contract Oracle is Storage {
         _;
     }
 
-    modifier isFromNetwork(address _caller)
+    modifier onlyNetwork()
     {
         require(
-            _caller == networkAddress,
+            msg.sender == networkAddress,
             "caller is invalid"
         );
         _;
@@ -82,9 +92,12 @@ contract Oracle is Storage {
         string memory _path,
         address _callbackAddress,
         string memory _callbackFunction,
-        string memory _resType)
+        string memory _resType,
+        uint256 _numberOfReporter)
         public
+        payable
         isValidRequest(_resType)
+        isEnoughEther(msg.value, _numberOfReporter)
     {
         Modules.Request memory req;
         bytes32 index = keccak256(abi.encodePacked(_url, _path, _callbackAddress, _callbackFunction));
@@ -108,14 +121,14 @@ contract Oracle is Storage {
         emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType, index);
     }
 
-    function responseString(bytes32 _index, string memory _value) public isFromNetwork(msg.sender)
+    function responseString(bytes32 _index, string memory _value) internal
     {
         Modules.Request memory req = requestStorage[keccak256(bytes("string"))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));
         require(isSuccess, "failed to execute callback function");
     }
 
-    function responseUint(bytes32 _index, uint256 _value) public isFromNetwork(msg.sender)
+    function responseUint(bytes32 _index, uint256 _value) internal
     {
         Modules.Request memory req = requestStorage[keccak256(bytes("uint"))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));
@@ -123,7 +136,7 @@ contract Oracle is Storage {
         isRequestComplete[_index] = true;
     }
 
-    function getOracleContractAddress() view public returns (address)
+    function getOracleContractAddress() view public returns(address)
     {
         return address(this);
     }
@@ -136,7 +149,7 @@ contract Oracle is Storage {
 
     function withdrawEther() public payable isStaking isNotLock
     {
-        msg.sender.transfer(1 ether);
+        msg.sender.transfer(1 ether - (punishStorage[msg.sender] * 1e17) + (rewardStorage[msg.sender] * 1e14));
     }
 
     function unlock() public isLock
@@ -147,5 +160,56 @@ contract Oracle is Storage {
     function isDeposit(address _checkAddress) public view returns(bool)
     {
         return depositStorage[_checkAddress];
+    }
+
+    function rewardAndPunish(address[] memory _rewardAddress, address[] memory _punishAddress) internal
+    {
+        for (uint i = 0; i < _rewardAddress.length; i++) {
+            rewardStorage[_rewardAddress[i]]++;
+        }
+        for (uint i = 0; i < _punishAddress.length; i++) {
+            if (punishStorage[_punishAddress[i]] == 9) {
+                depositStorage[_punishAddress[i]] = false;
+            } else {
+                punishStorage[_punishAddress[i]]++;
+            }
+        }
+    }
+
+    function stringResult(
+        bytes32 _index,
+        string memory _value,
+        address[] memory _rewardAddress,
+        address[] memory _punishAddress)
+        public onlyNetwork
+    {
+        rewardAndPunish(_rewardAddress, _punishAddress);
+        responseString(_index, _value);
+    }
+
+    function uintResult(
+        bytes32 _index,
+        uint256 _value,
+        address[] memory _rewardAddress,
+        address[] memory _punishAddress)
+        public onlyNetwork
+    {
+        rewardAndPunish(_rewardAddress, _punishAddress);
+        responseUint(_index, _value);
+    }
+
+
+    function isSatisfiedAmount(
+        uint256 _amountOfEther,
+        uint256 _returnFunctionGasFee,
+        uint256 _numberOfReporter)
+        internal pure returns (bool)
+    {
+        return (_amountOfEther >= (_numberOfReporter * 1e14) + _returnFunctionGasFee);
+    }
+
+    function calculateGasFee(uint256 _minReporter) public pure returns(uint256)
+    {
+        return (_minReporter * 1e14) + returnFunctionGasFee;
     }
 }

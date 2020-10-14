@@ -27,11 +27,13 @@ contract Demo {
         string memory _url,
         string memory _path,
         string memory _callbackFunction,
-        string memory _resType)
+        string memory _resType,
+        uint256 _minReporter)
         public
+        payable
     {
         OracleClient.Request memory req;
-        req.init(_url, _path, _callbackFunction, _resType);
+        req.init(_url, _path, _callbackFunction, _resType, _minReporter);
         bool isSuccess = req.send(oracleContractAddress, address(this));
         require(isSuccess, "failed to call oracle function");
     }

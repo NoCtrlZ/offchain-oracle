@@ -9,6 +9,7 @@ url = 'http://localhost:5000/api/vi',
 path = 'data.price',
 callbackFunction = "receiveOracle(string)",
 reqType = 'string',
+minReporter = 100,
 oneEther = 1e18
 
 contract("Deploy And Test", (accounts) => {
@@ -31,15 +32,13 @@ contract("Deploy And Test", (accounts) => {
         })
     )
 
-    describe('Request And Response Test',
-        it('Request And Response Flow Test', async () => {
-            await demo.createRequest(url, path, callbackFunction, reqType)
-            const index = soliditySha3(url, path, demo.address, callbackFunction)
-            await oracle.responseString(index, "25")
-            const oracleValue = await demo.oracleValue()
-
-            assert.equal(oracleValue, "25")
-        })
+    describe('Request Test',
+        it('Request Test', () =>
+            expect(async () => {
+                const gasFee = await oracle.calculateGasFee(minReporter).catch(e => { throw e })
+                await demo.createRequest(url, path, callbackFunction, reqType, minReporter, { from: accounts[0], value: Number(gasFee) }).catch(e => { throw e })
+            }).not.throw()
+        )
     )
 
     describe('Deposit Ether',

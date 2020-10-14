@@ -10,5 +10,6 @@ contract Storage {
     mapping (bytes32 => bool) public isRequestComplete;
     mapping (address => bool) public depositStorage;
     mapping (address => uint256) public rewardStorage;
+    mapping (address => uint256) public punishStorage;
     mapping (address => bool) public lockAddressStorage;
 }
