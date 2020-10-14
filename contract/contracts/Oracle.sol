@@ -126,6 +126,7 @@ contract Oracle is Storage {
         Modules.Request memory req = requestStorage[keccak256(bytes("string"))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));
         require(isSuccess, "failed to execute callback function");
+        isRequestComplete[_index] = true;
     }
 
     function responseUint(bytes32 _index, uint256 _value) internal
@@ -197,7 +198,6 @@ contract Oracle is Storage {
         rewardAndPunish(_rewardAddress, _punishAddress);
         responseUint(_index, _value);
     }
-
 
     function isSatisfiedAmount(
         uint256 _amountOfEther,

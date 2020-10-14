@@ -44,9 +44,27 @@ contract("Deploy And Test", (accounts) => {
     describe('Deposit Ether',
         it('Deposit Ether Test', async () => {
             await oracle.depositEther({ from: accounts[0], value: oneEther })
-            const isDeposit = await oracle.isDeposit(accounts[0])
+            await oracle.depositEther({ from: accounts[1], value: oneEther })
+            await oracle.depositEther({ from: accounts[2], value: oneEther })
+            const isOneAddressDeposit = await oracle.isDeposit(accounts[0])
+            const isTwoAddressDeposit = await oracle.isDeposit(accounts[1])
+            const isThreeAddressDeposit = await oracle.isDeposit(accounts[2])
 
-            assert.equal(isDeposit, true)
+            assert.equal(isOneAddressDeposit, true)
+            assert.equal(isTwoAddressDeposit, true)
+            assert.equal(isThreeAddressDeposit, true)
+        })
+    )
+
+    describe('Response Test',
+        it('Response Test', async () => {
+            const index = soliditySha3(url, path, demo.address, callbackFunction)
+            const rewardAddress = [accounts[0]]
+            const punishAddress = [accounts[1], accounts[2]]
+            await oracle.stringResult(index, "oracle result", rewardAddress, punishAddress)
+            const isDone = await oracle.isRequestComplete(index)
+
+            assert.equal(isDone, true)
         })
     )
 

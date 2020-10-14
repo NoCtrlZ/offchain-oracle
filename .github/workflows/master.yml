@@ -16,6 +16,6 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: cd mainchain-contract && yarn && yarn build
+    - run: cd contract && yarn && yarn build
       env:
         CI: true
