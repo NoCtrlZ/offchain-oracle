@@ -7,7 +7,8 @@ import "./Modules.sol";
 contract Oracle is Storage {
     address public networkAddress;
     uint256 constant returnFunctionGasFee = 1 ether / 20;
-    event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, string resType, bytes32 index);
+    event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, string resType, uint256 minReporter, bytes32 index);
+    event RequestAgain(string url, string path, address callbackAddress, string callbackFunction, string resType, bytes32 index);
     event WithdrawEther(address withdrawer, uint256 amount);
     using Modules for Modules.Request;
 
@@ -105,7 +106,7 @@ contract Oracle is Storage {
         req.init(_callbackAddress, _callbackFunction, _resType);
         requestStorage[keccak256(bytes(_resType))][index] = req;
         isRequestComplete[index] = false;
-        emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType, index);
+        emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType, _numberOfReporter, index);
     }
 
     function requestAgain(
@@ -119,7 +120,7 @@ contract Oracle is Storage {
     {
         bytes32 index = keccak256(abi.encodePacked(_url, _path, _callbackAddress, _callbackFunction));
         require(!isRequestComplete[index], "request was already completed");
-        emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType, index);
+        emit RequestAgain(_url, _path, _callbackAddress, _callbackFunction, _resType, index);
     }
 
     function responseString(bytes32 _index, string memory _value) internal

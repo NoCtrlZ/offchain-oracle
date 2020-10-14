@@ -5,10 +5,9 @@ WORKDIR /app
 COPY . .
 
 RUN apk add git &&\
-    npm i -g ganache-cli &&\
-    npm i &&\
-    npm run build
+    cp .env.example .env &&\
+    npm i
 
 EXPOSE 7545
 
-ENTRYPOINT ganache-cli -m="belt prize arrow cabbage banner proof word above ability helmet design rely" --networkId=5777 -p 7545 -h 0.0.0.0
+ENTRYPOINT npm run deploy && node utilities/watcher.js
