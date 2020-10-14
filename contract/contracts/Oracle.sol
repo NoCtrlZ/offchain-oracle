@@ -13,6 +13,52 @@ contract Oracle is Storage {
         networkAddress = _networkAddress;
     }
 
+    modifier isLock()
+    {
+        require(
+            lockAddressStorage[msg.sender],
+            "address is not locked"
+        );
+        _;
+    }
+
+    modifier isNotLock()
+    {
+        require(
+            !lockAddressStorage[msg.sender],
+            "address is locked"
+        );
+        _;
+    }
+
+    modifier isStaking()
+    {
+        require(
+            depositStorage[msg.sender],
+            "address owner is not staking"
+        );
+        depositStorage[msg.sender] = false;
+        _;
+    }
+
+    modifier isNotStaking()
+    {
+        require(
+            !depositStorage[msg.sender],
+            "address owner is already staking"
+        );
+        _;
+    }
+
+    modifier isEtherSatisfied()
+    {
+        require(
+            msg.value >= 1 ether,
+            "ether value is not satisfied"
+        );
+        _;
+    }
+
     modifier isFromNetwork(address _caller)
     {
         require(
@@ -80,5 +126,26 @@ contract Oracle is Storage {
     function getOracleContractAddress() view public returns (address)
     {
         return address(this);
+    }
+
+    function depositEther() public payable isEtherSatisfied isNotStaking
+    {
+        depositStorage[msg.sender] = true;
+        lockAddressStorage[msg.sender] = true;
+    }
+
+    function withdrawEther() public payable isStaking isNotLock
+    {
+        msg.sender.transfer(1 ether);
+    }
+
+    function unlock() public isLock
+    {
+        lockAddressStorage[msg.sender] = false;
+    }
+
+    function isDeposit(address _checkAddress) public view returns(bool)
+    {
+        return depositStorage[_checkAddress];
     }
 }

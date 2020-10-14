@@ -8,7 +8,8 @@ const
 url = 'http://localhost:5000/api/vi',
 path = 'data.price',
 callbackFunction = "receiveOracle(string)",
-reqType = 'string'
+reqType = 'string',
+oneEther = 1e18
 
 contract("Deploy And Test", (accounts) => {
     let oracle, demo
@@ -38,6 +39,15 @@ contract("Deploy And Test", (accounts) => {
             const oracleValue = await demo.oracleValue()
 
             assert.equal(oracleValue, "25")
+        })
+    )
+
+    describe('Deposit Ether',
+        it('Deposit Ether Test', async () => {
+            await oracle.depositEther({ from: accounts[0], value: oneEther })
+            const isDeposit = await oracle.isDeposit(accounts[0])
+
+            assert.equal(isDeposit, true)
         })
     )
 })
