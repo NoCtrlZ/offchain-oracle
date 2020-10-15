@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.7.0;
 
+import "./Common.sol";
+
 library OracleClient {
+    using Common for Common.ResultType;
+
     struct Request {
         string url;
         string path;
         string callbackFunction;
-        string resType;
+        Common.ResultType resType;
         uint256 minReporter;
     }
 
@@ -15,7 +19,7 @@ library OracleClient {
         string memory _url,
         string memory _path,
         string memory _callbackFunction,
-        string memory _resType,
+        Common.ResultType _resType,
         uint256 _minReporter)
         internal pure returns (OracleClient.Request memory)
     {
@@ -33,7 +37,7 @@ library OracleClient {
         internal returns (bool)
     {
         (bool isSuccess, ) = _oracleContractAddress.call{ value: msg.value }(
-            abi.encodeWithSignature("request(string,string,address,string,string,uint256)",
+            abi.encodeWithSignature("request(string,string,address,string,uint8,uint256)",
             self.url,
             self.path,
             _callbackAddress,

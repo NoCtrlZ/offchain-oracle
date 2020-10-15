@@ -3,14 +3,17 @@ pragma solidity 0.7.0;
 
 import "./Storage.sol";
 import "./Modules.sol";
+import "./Common.sol";
 
 contract Oracle is Storage {
+    using Modules for Modules.Request;
+    using Common for Common.ResultType;
+
     address public networkAddress;
     uint256 constant returnFunctionGasFee = 1 ether / 20;
-    event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, string resType, uint256 minReporter, bytes32 index);
-    event RequestAgain(string url, string path, address callbackAddress, string callbackFunction, string resType, bytes32 index);
+    event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, Common.ResultType resType, uint256 minReporter, bytes32 index);
+    event RequestAgain(string url, string path, address callbackAddress, string callbackFunction, Common.ResultType resType, bytes32 index);
     event WithdrawEther(address withdrawer, uint256 amount);
-    using Modules for Modules.Request;
 
     constructor(address _networkAddress) {
         networkAddress = _networkAddress;
@@ -80,31 +83,21 @@ contract Oracle is Storage {
         _;
     }
 
-    modifier isValidRequest(string memory _resType)
-    {
-        require(
-            keccak256(bytes(_resType)) == keccak256(bytes("string")) || keccak256(bytes(_resType)) == keccak256(bytes("uint")),
-            "return type is invalid"
-        );
-        _;
-    }
-
     function request(
         string memory _url,
         string memory _path,
         address _callbackAddress,
         string memory _callbackFunction,
-        string memory _resType,
+        Common.ResultType _resType,
         uint256 _numberOfReporter)
         public
         payable
-        isValidRequest(_resType)
         isEnoughEther(msg.value, _numberOfReporter)
     {
         Modules.Request memory req;
         bytes32 index = keccak256(abi.encodePacked(_url, _path, _callbackAddress, _callbackFunction));
         req.init(_callbackAddress, _callbackFunction, _resType);
-        requestStorage[keccak256(bytes(_resType))][index] = req;
+        requestStorage[keccak256(abi.encode(_resType))][index] = req;
         isRequestComplete[index] = false;
         emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType, _numberOfReporter, index);
     }
@@ -114,9 +107,8 @@ contract Oracle is Storage {
         string memory _path,
         address _callbackAddress,
         string memory _callbackFunction,
-        string memory _resType)
+        Common.ResultType _resType)
         public
-        isValidRequest(_resType)
     {
         bytes32 index = keccak256(abi.encodePacked(_url, _path, _callbackAddress, _callbackFunction));
         require(!isRequestComplete[index], "request was already completed");
