@@ -7,6 +7,8 @@ const OracleContractAddress = contracts.Oracle
 const OracleContractABI = require("../build/contracts/Oracle").abi
 const OracleContract = new ethers.Contract(OracleContractAddress, OracleContractABI, provider)
 
+console.log("Start Subscribing Event...")
+
 OracleContract.on("RequestCreation", async (url, path, callbackAddress, callbackFunction, resType, minReporter, index) => {
     console.log("url: ", url)
     console.log("path: ", path)

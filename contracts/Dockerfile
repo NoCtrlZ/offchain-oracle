@@ -6,8 +6,9 @@ COPY . .
 
 RUN apk add git &&\
     cp .env.example .env &&\
-    npm i
+    npm i &&\
+    mkdir sample
 
 EXPOSE 7545
 
-ENTRYPOINT npm run deploy && node utilities/watcher.js
+ENTRYPOINT npm run deploy && npm run watch
