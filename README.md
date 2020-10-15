@@ -7,6 +7,6 @@ $ docker-compose up
 ```
 ## Directory
 - node: P2P network client nodes
-- server: Bootstrap server
+- bootstrap: Bootstrap server
 - http: Simple http client
 - contract: Ethereum oracle and client contract
