@@ -14,3 +14,13 @@ services:
     stdin_open: true
     volumes:
       - ./contracts:/app
+  bootstrap:
+    build: ./bootstrap
+    container_name: bootstrap
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./bootstrap:/app
+      - /app/target
+    ports:
+      - "3000:3000"

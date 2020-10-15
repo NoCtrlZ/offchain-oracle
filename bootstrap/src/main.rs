@@ -9,6 +9,7 @@ fn swish_swish() -> Swish {
     let mut swish = Swish::new();
     swish.get("/", hello_world);
     swish.set_cors_as(allow_everything());
+    swish.set_address("0.0.0.0");
     swish
 }
 
