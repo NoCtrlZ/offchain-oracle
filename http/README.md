@@ -1,5 +1,4 @@
-# Roar
-![npm version](https://badge.fury.io/js/hear_me_roar.svg)  
+# Http Client
 This is http light client for javascript.
 ```javascript
 const Client = require('hear_me_roar').default
@@ -23,13 +22,3 @@ const request = () => {
 request()
 
 ```
-## Install
-```
-$ npm install --save hear_me_roar
-```
-## Roadmap
-- [ ] Support To Set Header
-- [ ] Security Check
-- [ ] Optimization
-- [ ] Integration Test
-- [ ] Refactoring

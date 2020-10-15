@@ -23,16 +23,17 @@ contract Demo {
         _;
     }
 
-    function createRequest(
-        string memory _url,
-        string memory _path,
-        string memory _callbackFunction,
-        string memory _resType,
-        uint256 _minReporter)
+    function createRequest()
         public
         payable
     {
         OracleClient.Request memory req;
+        string memory _url = "https://ethgasstation.info/api/ethgasAPI.json";
+        string memory _path = "gasPriceRange.10";
+        string memory _callbackFunction = "receiveOracle(string)";
+        string memory _resType = "string";
+        uint256 _minReporter = 100;
+
         req.init(_url, _path, _callbackFunction, _resType, _minReporter);
         bool isSuccess = req.send(oracleContractAddress, address(this));
         require(isSuccess, "failed to call oracle function");

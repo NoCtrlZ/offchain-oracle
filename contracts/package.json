@@ -10,7 +10,7 @@
     "build": "truffle compile",
     "deploy": "truffle migrate --network development --reset",
     "watch": "node utilities/watcher.js",
-    "test": "truffle test --network development --show-events"
+    "test": "truffle test --network local --show-events"
   },
   "repository": {
     "type": "git",
