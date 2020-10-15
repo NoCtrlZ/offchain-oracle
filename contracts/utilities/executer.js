@@ -34,8 +34,8 @@ web3.eth.getTransactionCount(address).then(async transactionNonce => {
     const transactionObject = {
       chainId: 1,
       nonce: web3.utils.toHex(transactionNonce),
-      gasLimit: 8000000, // pass an appropriate value
-      gasPrice: 150000000000, // pass an appropriate value
+      gasLimit: 800000, // pass an appropriate value
+      gasPrice: 1500000000, // pass an appropriate value
       to: demoAddress,
       from: address,
       data: encodedABI,
