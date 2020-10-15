@@ -8,7 +8,6 @@ const
 url = 'http://localhost:5000/api/vi',
 path = 'data.price',
 callbackFunction = "receiveOracle(string)",
-reqType = 'string',
 minReporter = 100,
 oneEther = 1e18,
 oneReward = 1e14,

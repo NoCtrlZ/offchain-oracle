@@ -10,6 +10,7 @@
     "build": "truffle compile",
     "deploy": "truffle migrate --network development --reset",
     "watch": "node utilities/watcher.js",
+    "send": "node utilities/executer.js",
     "test": "truffle test --network local --show-events"
   },
   "repository": {

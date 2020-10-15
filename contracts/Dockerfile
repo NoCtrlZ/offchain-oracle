@@ -11,4 +11,4 @@ RUN apk add git &&\
 
 EXPOSE 7545
 
-ENTRYPOINT npm run deploy && npm run watch
+ENTRYPOINT npm run deploy && npm run watch & npm run send
