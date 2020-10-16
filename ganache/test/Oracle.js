@@ -5,8 +5,8 @@ const Oracle = artifacts.require("Oracle")
 const Demo = artifacts.require("Demo")
 
 const
-url = 'http://localhost:5000/api/vi',
-path = 'data.price',
+url = 'https://ethgasstation.info/api/ethgasAPI.json',
+path = 'gasPriceRange.10',
 callbackFunction = "receiveOracle(string)",
 minReporter = 100,
 oneEther = 1e18,
@@ -63,8 +63,10 @@ contract("Deploy And Test", (accounts) => {
             const rewardAddress = [accounts[0]]
             const punishAddress = [accounts[1], accounts[2]]
             await oracle.stringResult(index, "oracle result", rewardAddress, punishAddress)
+            const oracleValue = await demo.oracleValue()
             const isDone = await oracle.isRequestComplete(index)
 
+            assert.equal(oracleValue, "oracle result")
             assert.equal(isDone, true)
         })
     )

@@ -9,7 +9,7 @@
   "scripts": {
     "build": "truffle compile",
     "deploy": "truffle migrate --network development --reset",
-    "test": "truffle test --network local --show-events"
+    "test": "truffle test --network development --show-events"
   },
   "repository": {
     "type": "git",

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+pragma experimental ABIEncoderV2;
 pragma solidity 0.7.0;
 
 import "./Storage.sol";
@@ -117,7 +118,7 @@ contract Oracle is Storage {
 
     function responseString(bytes32 _index, string memory _value) internal
     {
-        Modules.Request memory req = requestStorage[keccak256(bytes("string"))][_index];
+        Modules.Request memory req = requestStorage[keccak256(abi.encode(Common.ResultType.STRING))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));
         require(isSuccess, "failed to execute callback function");
         isRequestComplete[_index] = true;
@@ -125,7 +126,7 @@ contract Oracle is Storage {
 
     function responseUint(bytes32 _index, uint256 _value) internal
     {
-        Modules.Request memory req = requestStorage[keccak256(bytes("uint"))][_index];
+        Modules.Request memory req = requestStorage[keccak256(abi.encode(Common.ResultType.UINT256))][_index];
         (bool isSuccess, ) = req.callbackAddress.call(abi.encodeWithSignature(req.callbackFunction, _value));
         require(isSuccess, "failed to execute callback function");
         isRequestComplete[_index] = true;
