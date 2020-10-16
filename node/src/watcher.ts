@@ -9,7 +9,7 @@ const OracleContract = new ethers.Contract(OracleContractAddress, OracleContract
 
 console.log("Start Subscribing Event...")
 
-OracleContract.on("RequestCreation", async (url, path, callbackAddress, callbackFunction, resType, minReporter, index) => {
+OracleContract.on("RequestCreation", async (url: string, path: string, callbackAddress: string, callbackFunction: string, resType: number, minReporter: number, index: string) => {
     console.log("url: ", url)
     console.log("path: ", path)
     console.log("callbackAddress: ", callbackAddress)

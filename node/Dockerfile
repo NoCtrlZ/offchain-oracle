@@ -7,8 +7,6 @@ COPY . .
 RUN apk add git &&\
     cp .env.example .env &&\
     npm i &&\
-    mkdir sample
+    npm run build
 
-EXPOSE 7545
-
-ENTRYPOINT npm run deploy && npm run send && npm run watch
+ENTRYPOINT sleep 30 && npm run send & npm run listen

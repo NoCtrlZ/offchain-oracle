@@ -5,15 +5,10 @@ services:
     container_name: ganache
     tty: true
     stdin_open: true
+    volumes:
+      - ./ganache:/app
     ports:
       - "7545:7545"
-  contracts:
-    build: ./contracts
-    container_name: contracts
-    tty: true
-    stdin_open: true
-    volumes:
-      - ./contracts:/app
   bootstrap:
     build: ./bootstrap
     container_name: bootstrap
@@ -24,3 +19,14 @@ services:
       - /app/target
     ports:
       - "3000:3000"
+  node:
+    build: ./node
+    container_name: node
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./node:/app
+      - ./ganache/sample:/app/sample
+      - ./ganache/build:/app/build
+      - /app/node_modules
+      - /app/lib
