@@ -6,8 +6,9 @@
     "build": "tsc",
     "fix": "eslint --fix src --ext .ts",
     "write": "prettier src --write",
-    "watch": "ts-node src/watcher.ts set NODE_ENV=local",
-    "listen": "node lib/watcher.js",
+    "watch": "ts-node src/index.ts",
+    "node": "ts-node",
+    "listen": "node lib/index.js",
     "exec": "./node_modules/.bin/ts-node",
     "send": "node utilities/executer.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,6 +18,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/node": "^14.11.8",
     "@types/sha1": "^1.1.2",
     "@typescript-eslint/eslint-plugin": "^4.2.0",
     "@typescript-eslint/parser": "^4.2.0",

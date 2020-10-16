@@ -1,11 +1,12 @@
 const Web3 = require('web3');
 const EthTx = require('ethereumjs-tx');
-const host = 'http://ganache:7545'
 const contracts = require("../sample/development.json")
 
 require('dotenv').config()
+const env = process.env.ENV
 const address = process.env.ADDRESS
 const privKey = process.env.PRIVATE_KEY
+const host = env === 'local' ? 'http://127.0.0.1:7545' : 'http://ganache:7545'
 
 const demoAddress = contracts.Demo
 const demoABI = require('../build/contracts/Demo').abi
