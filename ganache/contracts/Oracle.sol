@@ -11,7 +11,6 @@ contract Oracle is Storage {
     using Common for Common.ResultType;
 
     address public networkAddress;
-    uint256 constant returnFunctionGasFee = 1 ether / 20;
     event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, Common.ResultType resType, uint256 minReporter, bytes32 index);
     event RequestAgain(string url, string path, address callbackAddress, string callbackFunction, Common.ResultType resType, bytes32 index);
     event WithdrawEther(address withdrawer, uint256 amount);
@@ -23,7 +22,7 @@ contract Oracle is Storage {
     modifier isEnoughEther(uint256 _etherValue, uint256 _numberOfReporter)
     {
         require(
-            isSatisfiedAmount(_etherValue, returnFunctionGasFee, _numberOfReporter),
+            isSatisfiedAmount(_etherValue, _numberOfReporter),
             "value is not enough"
         );
         _;
@@ -198,15 +197,9 @@ contract Oracle is Storage {
 
     function isSatisfiedAmount(
         uint256 _amountOfEther,
-        uint256 _returnFunctionGasFee,
         uint256 _numberOfReporter)
         internal pure returns (bool)
     {
-        return (_amountOfEther >= (_numberOfReporter * 1e14) + _returnFunctionGasFee);
-    }
-
-    function calculateGasFee(uint256 _minReporter) public pure returns(uint256)
-    {
-        return (_minReporter * 1e14) + returnFunctionGasFee;
+        return _amountOfEther >= Modules.calculateGasFee(_numberOfReporter);
     }
 }

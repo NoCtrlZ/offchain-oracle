@@ -36,7 +36,7 @@ contract("Deploy And Test", (accounts) => {
     describe('Request Test',
         it('Request Test', () =>
             expect(async () => {
-                const gasFee = await oracle.calculateGasFee(minReporter).catch(e => { throw e })
+                const gasFee = (minReporter * oneReward) + (oneEther / 20)
                 await demo.createRequest({ from: accounts[0], value: Number(gasFee) }).catch(e => { throw e })
             }).not.throw()
         )

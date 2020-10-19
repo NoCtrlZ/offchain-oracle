@@ -1,7 +1,7 @@
 export default class NodeProp {
-    id: string
+  id: string;
 
-    constructor(address: string) {
-        this.id = address
-    }
+  constructor(address: string) {
+    this.id = address;
+  }
 }

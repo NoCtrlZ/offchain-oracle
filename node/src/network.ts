@@ -1,9 +1,9 @@
-import KBucket from './kbucket'
+import KBucket from './kbucket';
 
 export default class Network {
-    kBucket: KBucket
+  kBucket: KBucket;
 
-    constructor(address: KBucket) {
-        this.kBucket = address
-    }
+  constructor(address: KBucket) {
+    this.kBucket = address;
+  }
 }

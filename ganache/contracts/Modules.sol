@@ -6,6 +6,8 @@ import "./Common.sol";
 library Modules {
     using Common for Common.ResultType;
 
+    uint256 constant returnFunctionGasFee = 1 ether / 20;
+
     struct Request {
         address callbackAddress;
         string callbackFunction;
@@ -22,5 +24,10 @@ library Modules {
         self.callbackAddress = _callbackAddress;
         self.callbackFunction = _callbackFunction;
         self.resType = _resType;
+    }
+
+    function calculateGasFee(uint256 _minReporter) public pure returns(uint256)
+    {
+        return (_minReporter * 1e14) + returnFunctionGasFee;
     }
 }

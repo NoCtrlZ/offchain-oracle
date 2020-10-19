@@ -1,7 +1,7 @@
 export default class KBucket {
-    kBucket: string
+  kBucket: string;
 
-    constructor(address: string) {
-        this.kBucket = address
-    }
+  constructor(address: string) {
+    this.kBucket = address;
+  }
 }
