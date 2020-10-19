@@ -10,13 +10,15 @@ contract Oracle is Storage {
     using Modules for Modules.Request;
     using Common for Common.ResultType;
 
-    address public networkAddress;
+    uint8 public difficulty;
+
     event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, Common.ResultType resType, uint256 minReporter, bytes32 index);
     event RequestAgain(string url, string path, address callbackAddress, string callbackFunction, Common.ResultType resType, bytes32 index);
+    event CommitAdmin(bytes32 index, uint256 nonce, address admin);
     event WithdrawEther(address withdrawer, uint256 amount);
 
-    constructor(address _networkAddress) {
-        networkAddress = _networkAddress;
+    constructor() {
+        difficulty = 1;
     }
 
     modifier isEnoughEther(uint256 _etherValue, uint256 _numberOfReporter)
@@ -52,7 +54,6 @@ contract Oracle is Storage {
             depositStorage[msg.sender],
             "address owner is not staking"
         );
-        depositStorage[msg.sender] = false;
         _;
     }
 
@@ -74,10 +75,10 @@ contract Oracle is Storage {
         _;
     }
 
-    modifier onlyNetwork()
+    modifier onlyAdmin(bytes32 _index)
     {
         require(
-            msg.sender == networkAddress,
+            msg.sender == oracleAdmin[_index],
             "caller is invalid"
         );
         _;
@@ -144,6 +145,7 @@ contract Oracle is Storage {
 
     function withdrawEther() public payable isStaking isNotLock
     {
+        depositStorage[msg.sender] = false;
         uint256 withdrawAmout = 1 ether - (punishStorage[msg.sender] * 1e17) + (rewardStorage[msg.sender] * 1e14);
         msg.sender.transfer(withdrawAmout);
         WithdrawEther(msg.sender, withdrawAmout);
@@ -178,7 +180,7 @@ contract Oracle is Storage {
         string memory _value,
         address[] memory _rewardAddress,
         address[] memory _punishAddress)
-        public onlyNetwork
+        public onlyAdmin(_index)
     {
         rewardAndPunish(_rewardAddress, _punishAddress);
         responseString(_index, _value);
@@ -189,7 +191,7 @@ contract Oracle is Storage {
         uint256 _value,
         address[] memory _rewardAddress,
         address[] memory _punishAddress)
-        public onlyNetwork
+        public onlyAdmin(_index)
     {
         rewardAndPunish(_rewardAddress, _punishAddress);
         responseUint(_index, _value);
@@ -201,5 +203,22 @@ contract Oracle is Storage {
         internal pure returns (bool)
     {
         return _amountOfEther >= Modules.calculateGasFee(_numberOfReporter);
+    }
+
+    function commitAdmin(bytes32 _index, uint256 _nonce) isStaking public returns(bool) {
+        bytes32 checker = keccak256(abi.encodePacked(_index, _nonce));
+        for (uint i = 0; i < difficulty; i++) {
+            if (checker[i] != _index[i]) {
+                return false;
+            }
+        }
+        oracleAdmin[_index] = msg.sender;
+        emit CommitAdmin(_index, _nonce, msg.sender);
+        return true;
+    }
+
+    function slice(string memory self) public pure returns(bytes32) {
+        bytes memory test = bytes(self);
+        return test[2];
     }
 }

@@ -8,6 +8,7 @@ contract Storage {
 
     mapping (bytes32 => mapping(bytes32 => Modules.Request)) public requestStorage;
     mapping (bytes32 => bool) public isRequestComplete;
+    mapping (bytes32 => address) public oracleAdmin;
     mapping (address => bool) public depositStorage;
     mapping (address => uint256) public rewardStorage;
     mapping (address => uint256) public punishStorage;

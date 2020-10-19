@@ -17,7 +17,7 @@ contract("Deploy And Test", (accounts) => {
     let oracle, demo
 
     before( async () => {
-        oracle = await Oracle.new(accounts[0])
+        oracle = await Oracle.new()
         demo = await Demo.new(oracle.address)
     })
 
@@ -25,11 +25,9 @@ contract("Deploy And Test", (accounts) => {
         it('Deploy Test', async () => {
             const oreacleAddress = await oracle.getOracleContractAddress()
             const oracleContractAddress = await demo.oracleContractAddress()
-            const networkAddress = await oracle.networkAddress()
 
             assert.equal(oreacleAddress, oracle.address)
             assert.equal(oracleContractAddress, oracle.address)
-            assert.equal(networkAddress, accounts[0])
         })
     )
 
@@ -54,6 +52,21 @@ contract("Deploy And Test", (accounts) => {
             assert.equal(isOneAddressDeposit, true)
             assert.equal(isTwoAddressDeposit, true)
             assert.equal(isThreeAddressDeposit, true)
+        })
+    )
+
+    describe('Register Admin',
+        it('Register Admin Test', async() => {
+            const index = soliditySha3(url, path, demo.address, callbackFunction)
+            let i = 0;
+            let nonce = soliditySha3(index, i)
+            while(!nonce.startsWith(index.slice(0, 5))) {
+                i++
+                nonce = soliditySha3(index, i)
+            }
+            await oracle.commitAdmin(index, i)
+            const admin = await oracle.oracleAdmin(index)
+            assert.equal(admin, accounts[0])
         })
     )
 
