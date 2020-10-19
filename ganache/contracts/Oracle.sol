@@ -16,6 +16,8 @@ contract Oracle is Storage {
     event RequestAgain(string url, string path, address callbackAddress, string callbackFunction, Common.ResultType resType, bytes32 index);
     event CommitAdmin(bytes32 index, uint256 nonce, address admin);
     event WithdrawEther(address withdrawer, uint256 amount);
+    event RecDebug(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s);
+    event Recovered(address recAddress);
 
     constructor() {
         difficulty = 1;
@@ -75,10 +77,11 @@ contract Oracle is Storage {
         _;
     }
 
-    modifier onlyAdmin(bytes32 _index)
+    modifier onlyVerifiedAdmin(bytes32 _index, uint8 _v, bytes32 _r, bytes32 _s)
     {
         require(
-            msg.sender == oracleAdmin[_index],
+            msg.sender == oracleAdmin[_index] &&
+            verifySender(_index, _v, _r, _s),
             "caller is invalid"
         );
         _;
@@ -179,8 +182,12 @@ contract Oracle is Storage {
         bytes32 _index,
         string memory _value,
         address[] memory _rewardAddress,
-        address[] memory _punishAddress)
-        public onlyAdmin(_index)
+        address[] memory _punishAddress,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+        )
+        public onlyVerifiedAdmin(_index, v, r, s)
     {
         rewardAndPunish(_rewardAddress, _punishAddress);
         responseString(_index, _value);
@@ -190,8 +197,12 @@ contract Oracle is Storage {
         bytes32 _index,
         uint256 _value,
         address[] memory _rewardAddress,
-        address[] memory _punishAddress)
-        public onlyAdmin(_index)
+        address[] memory _punishAddress,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+        )
+        public onlyVerifiedAdmin(_index, v, r, s)
     {
         rewardAndPunish(_rewardAddress, _punishAddress);
         responseUint(_index, _value);
@@ -217,8 +228,14 @@ contract Oracle is Storage {
         return true;
     }
 
-    function slice(string memory self) public pure returns(bytes32) {
-        bytes memory test = bytes(self);
-        return test[2];
+    function verifySender(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) internal view returns(bool) {
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+        bytes32 hashedValue = keccak256(abi.encodePacked(prefix, msgHash));
+        address recovered = ecrecover(hashedValue, v, r, s);
+        return recovered == oracleVerifier[msgHash];
+    }
+
+    function commitVerifier(bytes32 _index) public {
+        oracleVerifier[_index] = msg.sender;
     }
 }

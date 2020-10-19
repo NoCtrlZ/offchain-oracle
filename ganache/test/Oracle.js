@@ -1,3 +1,11 @@
+var Web3 = require('web3');
+var utils = require('ethereumjs-util');
+
+var web3 = new Web3();
+
+var defaultProvider = new web3.providers.HttpProvider('http://localhost:7545');
+web3.setProvider(defaultProvider);
+
 const truffleAssert = require('truffle-assertions');
 const { soliditySha3 } = require("web3-utils");
 
@@ -70,12 +78,28 @@ contract("Deploy And Test", (accounts) => {
         })
     )
 
+    describe('Register Verifier',
+        it('Register Verifier Test', async () => {
+            const index = soliditySha3(url, path, demo.address, callbackFunction)
+            await oracle.commitVerifier(index)
+            const verifier = await oracle.oracleVerifier(index)
+
+            assert.equal(verifier, accounts[0])
+        }))
+
     describe('Response Test',
         it('Response Test', async () => {
             const index = soliditySha3(url, path, demo.address, callbackFunction)
+            let signature = await web3.eth.sign(index, accounts[0]);
+            signature = signature.split('x')[1];
+
+            const r = new Buffer(signature.substring(0, 64), 'hex')
+            const s = new Buffer(signature.substring(64, 128), 'hex')
+            const v = 28;
+
             const rewardAddress = [accounts[0]]
             const punishAddress = [accounts[1], accounts[2]]
-            await oracle.stringResult(index, "oracle result", rewardAddress, punishAddress)
+            await oracle.stringResult(index, "oracle result", rewardAddress, punishAddress, v, r, s)
             const oracleValue = await demo.oracleValue()
             const isDone = await oracle.isRequestComplete(index)
 
