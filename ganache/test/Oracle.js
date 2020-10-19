@@ -88,7 +88,18 @@ contract("Deploy And Test", (accounts) => {
                 i++
                 nonce = soliditySha3(index, oracleNonce, i)
             }
-            await oracle.commitVerifier(index, i)
+            let signature = await web3.eth.sign(index, accounts[0]);
+            signature = signature.split('x')[1];
+
+            const r = '0x' + signature.substring(0, 64)
+            const s = '0x' + signature.substring(64, 128)
+            let v = '0x' + signature.slice(128, 130)
+            if (v == '0x00')
+                v = '0x1b';
+            else if (v == '0x01')
+                v = '0x1c'
+
+            await oracle.commitVerifier(index, i, v, r, s, { from: accounts[2] })
             const verifier = await oracle.oracleVerifier(index)
 
             assert.equal(verifier, accounts[0])
@@ -103,7 +114,7 @@ contract("Deploy And Test", (accounts) => {
             const s = '0x' + signature.substring(64, 128)
             let v = '0x' + signature.slice(128, 130)
             if (v == '0x00')
-                v = '0x1b';
+                v = '0x1b'
             else if (v == '0x01')
                 v = '0x1c'
 

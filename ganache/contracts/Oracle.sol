@@ -19,6 +19,7 @@ contract Oracle is Storage {
     event WithdrawEther(address withdrawer, uint256 amount);
     event Recovered(address recAddress);
     event Caller(address user1, address user2);
+    event Debug(bytes32, uint8 r, bytes32 s, bytes32 v);
 
     constructor() {
         difficulty = 1;
@@ -230,15 +231,15 @@ contract Oracle is Storage {
         return true;
     }
 
-    function verifySender(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) internal returns(bool) {
+    function verifySender(bytes32 _msgHash, uint8 _v, bytes32 _r, bytes32 _s) internal returns(bool) {
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
-        bytes32 hashedValue = keccak256(abi.encodePacked(prefix, msgHash));
-        address recovered = ecrecover(hashedValue, v, r, s);
+        bytes32 hashedValue = keccak256(abi.encodePacked(prefix, _msgHash));
+        address recovered = ecrecover(hashedValue, _v, _r, _s);
         emit Recovered(recovered);
-        return recovered == oracleVerifier[msgHash];
+        return recovered == oracleVerifier[_msgHash];
     }
 
-    function commitVerifier(bytes32 _index, uint256 _nonce) public returns(bool) {
+    function commitVerifier(bytes32 _index, uint256 _nonce,  uint8 _v, bytes32 _r, bytes32 _s) public returns(bool) {
         if (oracleVerifier[_index] != address(0) || oracleAdmin[_index] == msg.sender || oracleNonce[_index] == bytes32(0) || oracleSeed[_index] != bytes32(0)) {
             return false;
         }
@@ -246,9 +247,13 @@ contract Oracle is Storage {
         if (!isValidNonce(_index, checkedParam)) {
             return false;
         }
-        oracleVerifier[_index] = msg.sender;
+        emit Debug(_index, _v, _r, _s);
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+        bytes32 hashedValue = keccak256(abi.encodePacked(prefix, _index));
+        address recovered = ecrecover(hashedValue, _v, _r, _s);
+        oracleVerifier[_index] = recovered;
         oracleSeed[_index] = checkedParam;
-        emit CommitVerifier(_index, _nonce, checkedParam, msg.sender);
+        emit CommitVerifier(_index, _nonce, checkedParam, recovered);
         return true;
     }
 
