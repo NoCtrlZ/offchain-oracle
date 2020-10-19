@@ -22,7 +22,7 @@ oneReward = 1e14,
 onePunish = 1e17
 
 contract("Deploy And Test", (accounts) => {
-    let oracle, demo
+    let oracle, demo, index
 
     before( async () => {
         oracle = await Oracle.new()
@@ -44,6 +44,8 @@ contract("Deploy And Test", (accounts) => {
             expect(async () => {
                 const gasFee = (minReporter * oneReward) + (oneEther / 20)
                 await demo.createRequest({ from: accounts[0], value: Number(gasFee) }).catch(e => { throw e })
+                const event = await oracle.getPastEvents('RequestCreation')
+                index = soliditySha3(url, path, demo.address, callbackFunction, event[0].returnValues.timestamp)
             }).not.throw()
         )
     )
@@ -65,23 +67,28 @@ contract("Deploy And Test", (accounts) => {
 
     describe('Register Admin',
         it('Register Admin Test', async() => {
-            const index = soliditySha3(url, path, demo.address, callbackFunction)
             let i = 0;
             let nonce = soliditySha3(index, i)
             while(!nonce.startsWith(index.slice(0, 5))) {
                 i++
                 nonce = soliditySha3(index, i)
             }
-            await oracle.commitAdmin(index, i)
+            await oracle.commitAdmin(index, i, { from: accounts[1]})
             const admin = await oracle.oracleAdmin(index)
-            assert.equal(admin, accounts[0])
+            assert.equal(admin, accounts[1])
         })
     )
 
     describe('Register Verifier',
         it('Register Verifier Test', async () => {
-            const index = soliditySha3(url, path, demo.address, callbackFunction)
-            await oracle.commitVerifier(index)
+            const oracleNonce = await oracle.oracleNonce(index)
+            let i = 0;
+            let nonce = soliditySha3(index, oracleNonce, i)
+            while(!nonce.startsWith(index.slice(0, 5))) {
+                i++
+                nonce = soliditySha3(index, oracleNonce, i)
+            }
+            await oracle.commitVerifier(index, i)
             const verifier = await oracle.oracleVerifier(index)
 
             assert.equal(verifier, accounts[0])
@@ -89,17 +96,20 @@ contract("Deploy And Test", (accounts) => {
 
     describe('Response Test',
         it('Response Test', async () => {
-            const index = soliditySha3(url, path, demo.address, callbackFunction)
             let signature = await web3.eth.sign(index, accounts[0]);
             signature = signature.split('x')[1];
 
-            const r = new Buffer(signature.substring(0, 64), 'hex')
-            const s = new Buffer(signature.substring(64, 128), 'hex')
-            const v = 28;
+            const r = '0x' + signature.substring(0, 64)
+            const s = '0x' + signature.substring(64, 128)
+            let v = '0x' + signature.slice(128, 130)
+            if (v == '0x00')
+                v = '0x1b';
+            else if (v == '0x01')
+                v = '0x1c'
 
             const rewardAddress = [accounts[0]]
             const punishAddress = [accounts[1], accounts[2]]
-            await oracle.stringResult(index, "oracle result", rewardAddress, punishAddress, v, r, s)
+            await oracle.stringResult(index, "oracle result", rewardAddress, punishAddress, v, r, s, { from: accounts[1] })
             const oracleValue = await demo.oracleValue()
             const isDone = await oracle.isRequestComplete(index)
 

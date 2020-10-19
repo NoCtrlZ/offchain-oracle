@@ -12,12 +12,13 @@ contract Oracle is Storage {
 
     uint8 public difficulty;
 
-    event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, Common.ResultType resType, uint256 minReporter, bytes32 index);
-    event RequestAgain(string url, string path, address callbackAddress, string callbackFunction, Common.ResultType resType, bytes32 index);
-    event CommitAdmin(bytes32 index, uint256 nonce, address admin);
+    event RequestCreation(string url, string path, address callbackAddress, string callbackFunction, Common.ResultType resType, uint256 minReporter, bytes32 index, uint256 timestamp);
+    event RequestAgain(string url, string path, address callbackAddress, string callbackFunction, Common.ResultType resType, uint256 minReporter, bytes32 index, uint256 timestamp);
+    event CommitAdmin(bytes32 index, uint256 nonce, bytes32 seed, address admin);
+    event CommitVerifier(bytes32 index, uint256 nonce, bytes32 seed, address verifier);
     event WithdrawEther(address withdrawer, uint256 amount);
-    event RecDebug(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s);
     event Recovered(address recAddress);
+    event Caller(address user1, address user2);
 
     constructor() {
         difficulty = 1;
@@ -79,6 +80,7 @@ contract Oracle is Storage {
 
     modifier onlyVerifiedAdmin(bytes32 _index, uint8 _v, bytes32 _r, bytes32 _s)
     {
+        emit Caller(msg.sender, oracleAdmin[_index]);
         require(
             msg.sender == oracleAdmin[_index] &&
             verifySender(_index, _v, _r, _s),
@@ -99,24 +101,22 @@ contract Oracle is Storage {
         isEnoughEther(msg.value, _numberOfReporter)
     {
         Modules.Request memory req;
-        bytes32 index = keccak256(abi.encodePacked(_url, _path, _callbackAddress, _callbackFunction));
-        req.init(_callbackAddress, _callbackFunction, _resType);
+        uint256 timestamp = block.timestamp;
+        bytes32 index = keccak256(abi.encodePacked(_url, _path, _callbackAddress, _callbackFunction, timestamp));
+        req.init(_url, _path, _callbackAddress, _callbackFunction, _numberOfReporter, timestamp, _resType);
         requestStorage[keccak256(abi.encode(_resType))][index] = req;
         isRequestComplete[index] = false;
-        emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType, _numberOfReporter, index);
+        emit RequestCreation(_url, _path, _callbackAddress, _callbackFunction, _resType, _numberOfReporter, index, timestamp);
     }
 
     function requestAgain(
-        string memory _url,
-        string memory _path,
-        address _callbackAddress,
-        string memory _callbackFunction,
+        bytes32 _index,
         Common.ResultType _resType)
         public
     {
-        bytes32 index = keccak256(abi.encodePacked(_url, _path, _callbackAddress, _callbackFunction));
-        require(!isRequestComplete[index], "request was already completed");
-        emit RequestAgain(_url, _path, _callbackAddress, _callbackFunction, _resType, index);
+        require(!isRequestComplete[_index], "request was already completed");
+        Modules.Request memory req = requestStorage[keccak256(abi.encode(_resType))][_index];
+        emit RequestAgain(req.url, req.path, req.callbackAddress, req.callbackFunction, req.resType, req.minReporter, _index, req.timestamp);
     }
 
     function responseString(bytes32 _index, string memory _value) internal
@@ -217,25 +217,47 @@ contract Oracle is Storage {
     }
 
     function commitAdmin(bytes32 _index, uint256 _nonce) isStaking public returns(bool) {
-        bytes32 checker = keccak256(abi.encodePacked(_index, _nonce));
-        for (uint i = 0; i < difficulty; i++) {
-            if (checker[i] != _index[i]) {
-                return false;
-            }
+        if (oracleAdmin[_index] != address(0)) {
+            return false;
+        }
+        bytes32 checkedParam = keccak256(abi.encodePacked(_index, _nonce));
+        if (!isValidNonce(_index, checkedParam)) {
+            return false;
         }
         oracleAdmin[_index] = msg.sender;
-        emit CommitAdmin(_index, _nonce, msg.sender);
+        oracleNonce[_index] = checkedParam;
+        emit CommitAdmin(_index, _nonce, checkedParam, msg.sender);
         return true;
     }
 
-    function verifySender(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) internal view returns(bool) {
+    function verifySender(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) internal returns(bool) {
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
         bytes32 hashedValue = keccak256(abi.encodePacked(prefix, msgHash));
         address recovered = ecrecover(hashedValue, v, r, s);
+        emit Recovered(recovered);
         return recovered == oracleVerifier[msgHash];
     }
 
-    function commitVerifier(bytes32 _index) public {
+    function commitVerifier(bytes32 _index, uint256 _nonce) public returns(bool) {
+        if (oracleVerifier[_index] != address(0) || oracleAdmin[_index] == msg.sender || oracleNonce[_index] == bytes32(0) || oracleSeed[_index] != bytes32(0)) {
+            return false;
+        }
+        bytes32 checkedParam = keccak256(abi.encodePacked(_index, oracleNonce[_index], _nonce));
+        if (!isValidNonce(_index, checkedParam)) {
+            return false;
+        }
         oracleVerifier[_index] = msg.sender;
+        oracleSeed[_index] = checkedParam;
+        emit CommitVerifier(_index, _nonce, checkedParam, msg.sender);
+        return true;
+    }
+
+    function isValidNonce(bytes32 _index, bytes32 _checkedParam) internal view returns(bool) {
+        for (uint i = 0; i < difficulty; i++) {
+            if (_checkedParam[i] != _index[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 }

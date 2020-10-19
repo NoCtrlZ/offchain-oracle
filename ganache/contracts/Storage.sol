@@ -10,6 +10,8 @@ contract Storage {
     mapping (bytes32 => bool) public isRequestComplete;
     mapping (bytes32 => address) public oracleAdmin;
     mapping (bytes32 => address) public oracleVerifier;
+    mapping (bytes32 => bytes32) public oracleNonce;
+    mapping (bytes32 => bytes32) public oracleSeed;
     mapping (address => bool) public depositStorage;
     mapping (address => uint256) public rewardStorage;
     mapping (address => uint256) public punishStorage;
