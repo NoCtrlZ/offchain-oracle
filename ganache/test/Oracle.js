@@ -88,17 +88,7 @@ contract("Deploy And Test", (accounts) => {
                 i++
                 nonce = soliditySha3(index, oracleNonce, i)
             }
-            let signature = await web3.eth.sign(index, accounts[0]);
-            signature = signature.split('x')[1];
-
-            const r = '0x' + signature.substring(0, 64)
-            const s = '0x' + signature.substring(64, 128)
-            let v = '0x' + signature.slice(128, 130)
-            if (v == '0x00')
-                v = '0x1b';
-            else if (v == '0x01')
-                v = '0x1c'
-
+            const { v, r, s } = await getSignature(index, accounts[0]);
             await oracle.commitVerifier(index, i, v, r, s, { from: accounts[2] })
             const verifier = await oracle.oracleVerifier(index)
 
@@ -107,17 +97,7 @@ contract("Deploy And Test", (accounts) => {
 
     describe('Response Test',
         it('Response Test', async () => {
-            let signature = await web3.eth.sign(index, accounts[0]);
-            signature = signature.split('x')[1];
-
-            const r = '0x' + signature.substring(0, 64)
-            const s = '0x' + signature.substring(64, 128)
-            let v = '0x' + signature.slice(128, 130)
-            if (v == '0x00')
-                v = '0x1b'
-            else if (v == '0x01')
-                v = '0x1c'
-
+            const { v, r, s } = await getSignature(index, accounts[0])
             const rewardAddress = [accounts[0]]
             const punishAddress = [accounts[1], accounts[2]]
             await oracle.stringResult(index, "oracle result", rewardAddress, punishAddress, v, r, s, { from: accounts[1] })
@@ -154,3 +134,18 @@ contract("Deploy And Test", (accounts) => {
         })
     )
 })
+
+const getSignature = async (index, account) => {
+    let signature = await web3.eth.sign(index, account);
+    signature = signature.split('x')[1];
+    const r = '0x' + signature.substring(0, 64)
+    const s = '0x' + signature.substring(64, 128)
+    let v = '0x' + signature.slice(128, 130)
+    if (v == '0x00')
+        v = '0x1b'
+    else if (v == '0x01')
+        v = '0x1c'
+    return {
+        r, s, v
+    }
+}
